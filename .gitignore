@@ -1,0 +1,14 @@
+# sav dataset i veliki fajlovi
+data/
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# jupyter
+.ipynb_checkpoints/
+
+# ide
+.idea/
+.vscode/
