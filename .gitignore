@@ -12,3 +12,5 @@ __pycache__/
 # ide
 .idea/
 .vscode/
+
+git-filter-repo/
