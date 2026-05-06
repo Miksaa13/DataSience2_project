@@ -136,3 +136,99 @@ def tune_agglomerative(X):
                 })
 
     return results
+
+from sklearn.cluster import SpectralClustering, Birch
+
+def tune_spectral_nn(X):
+    results = []
+
+    for n_clusters in range(3,15,1):
+        for n_neighbors in range(5, 30, 5):
+
+            try:
+                clusterer = SpectralClustering(n_clusters=n_clusters, affinity="nearest_neighbors", n_neighbors=n_neighbors, assign_labels="kmeans", random_state=42)
+                labels = clusterer.fit_predict(X)
+            except:
+                continue
+
+            if len(set(labels)) > 1:
+                sil = silhouette_score(X, labels)
+            else:
+                sil = -1
+
+            results.append({"n_clusters": n_clusters,
+                            "n_neighbors": n_neighbors,
+                            "silhouette": sil
+            })
+
+    return results
+
+def tune_birch_spectral_rbf(X):
+    results = []
+
+    for threshold in [0.3, 0.5, 0.7]:
+        for n_clusters_birch in [50, 100, 200]:
+
+            try:
+                birch = Birch(threshold=threshold,n_clusters=n_clusters_birch)
+                birch.fit(X)
+
+                X_reduced = birch.subcluster_centers_
+
+                if len(X_reduced) < 10:
+                    continue
+
+
+                for n_clusters in [3, 5, 7]:
+                    for gamma in [0.01, 0.1, 1, 10]:
+
+                        try:
+                            spectral = SpectralClustering(n_clusters=n_clusters, affinity="rbf", gamma=gamma, assign_labels="kmeans", random_state=42)
+                            labels = spectral.fit_predict(X_reduced)
+
+                        except:
+                            continue
+
+                        if len(set(labels)) > 1:
+                            sil = silhouette_score(X_reduced, labels)
+                        else:
+                            sil = -1
+
+                        results.append({"threshold": threshold,
+                                        "birch_clusters": n_clusters_birch,
+                                        "final_clusters": n_clusters,
+                                        "gamma": gamma,
+                                        "n_points_after_birch": len(X_reduced),
+                                        "silhouette": sil
+                        })
+            except:
+                continue
+
+    return results
+
+
+from sklearn.cluster import Birch
+
+def tune_birch(X):
+    results = []
+
+    for threshold in [0.3, 0.5, 0.7]:
+        for n_clusters in [50, 100, 200]:
+
+            try:
+                birch = Birch(threshold=threshold, n_clusters=n_clusters)
+                labels = birch.fit_predict(X)
+            except:
+                continue
+
+            if len(set(labels)) > 1:
+                sil = silhouette_score(X, labels)
+            else:
+                sil = -1
+
+            results.append({"threshold": threshold,
+                            "n_clusters": n_clusters,
+                            "silhouette": sil
+            })
+
+    return results
